@@ -1,8 +1,10 @@
+# WAVE ONE TESTING...
+
 require_relative 'account'
 
 test = Bank::Account.new(100)
 
-test.balance
+puts test.current_balance
 
 test.deposit(50)
 
