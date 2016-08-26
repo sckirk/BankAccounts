@@ -11,6 +11,7 @@ module Bank
             @id = account_hash[:id]
             @balance = account_hash[:balance]
             @open_date = account_hash[:open_date]
+            @total_withdrawn = nil
 
             unless @balance >= self.class::MINIMUM_BALANCE
                 raise ArgumentError.new("Account balances cannot be less than #{ self.class::MINIMUM_BALANCE } cents.")
@@ -38,25 +39,34 @@ module Bank
         end
 
         def withdraw(withdrawal_amount)
+            #COME BACK HERE, can I save this as a method and then call this method here and in the checking withdraw method?
             unless withdrawal_amount.is_a?(Numeric)
                 raise ArgumentError.new("You can only withdraw numerical values. Please log-in again.")
             end
 
-            total_withdrawn = withdrawal_amount + self.class::TRANSACTION_FEE
+            @total_withdrawn = withdrawal_amount + self.class::TRANSACTION_FEE
 
             transaction_fee_incurred = "Please note: you were charged a #{ self.class::TRANSACTION_FEE } cent transaction fee on this transaction."
 
-            if @balance - total_withdrawn >= self.class::MINIMUM_BALANCE
-                @balance = @balance - total_withdrawn
+            if valid_withdrawal?
+                @balance = @balance - @total_withdrawn
                 puts "You successfully withdrew #{ withdrawal_amount } cents. Your updated account balance is #{ @balance } cents."
                 if self.class::TRANSACTION_FEE != 0
                     puts transaction_fee_incurred
                 end
                 return @balance
             else
-                puts "Your current account balance is #{ @balance } cents. You cannot withdraw #{ total_withdrawn } cents (this includes any transaction fees, if applicable) because your account must maintain a minimum of #{ self.class::MINIMUM_BALANCE } cents. Please login again to try a different withdrawal request."
+                puts "Your current account balance is #{ @balance } cents. You cannot withdraw #{ @total_withdrawn } cents (this includes any transaction fees, if applicable) because your account must maintain a minimum of #{ self.class::MINIMUM_BALANCE } cents. Please login again to try a different withdrawal request."
                 return @balance
             end
+        end
+
+        def valid_withdrawal?
+            @balance - @total_withdrawn >= self.class::MINIMUM_BALANCE
+        end
+
+        def valid_opening_amount?
+            @balance < self.class::MINIMUM_BALANCE
         end
 
         def deposit(deposit_amount)
